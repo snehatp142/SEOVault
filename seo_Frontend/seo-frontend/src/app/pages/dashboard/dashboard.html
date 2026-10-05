@@ -1,0 +1,975 @@
+
+
+
+<div class="app-shell">
+
+  <aside class="side">
+    <a routerLink="/landing" class="brand">
+      <span>S</span>
+      <b>SEOVault</b>
+    </a>
+
+    <div class="side-label">WORKSPACE</div>
+
+    <nav>
+      <button
+        [class.active]="activeTab==='overview'"
+        (click)="setTab('overview')">
+        ⌂ <span>Overview</span>
+      </button>
+
+      <button
+        [class.active]="activeTab==='websites'"
+        (click)="setTab('websites')">
+        ◫ <span>Websites</span>
+      </button>
+
+      <button
+        [class.active]="activeTab==='keywords'"
+        (click)="setTab('keywords')">
+        ⌕ <span>Keywords</span>
+      </button>
+
+      <button
+        [class.active]="activeTab==='audit'"
+        (click)="setTab('audit')">
+        ◈ <span>SEO Audit</span>
+      </button>
+
+      <button
+        [class.active]="activeTab==='performance'"
+        (click)="setTab('performance')">
+        ↗ <span>Performance</span>
+      </button>
+
+      <!-- REPORTS -->
+      <button
+        [class.active]="activeTab==='reports'"
+        (click)="setTab('reports')">
+        ▣ <span>Reports</span>
+      </button>
+    </nav>
+
+    <div class="side-bottom">
+      <div class="user-mini">
+        <span>{{userName.charAt(0).toUpperCase()}}</span>
+
+        <div>
+          <b>{{userName}}</b>
+          <small>{{email||'SEO Analyst'}}</small>
+        </div>
+      </div>
+
+      <button class="logout" (click)="logout()">
+        ↪ Sign out
+      </button>
+    </div>
+  </aside>
+
+
+  <main class="content">
+
+    <header class="top">
+      <div>
+        <span class="crumb">
+          WORKSPACE / {{activeTab | uppercase}}
+        </span>
+
+        <h1>{{heading}}</h1>
+
+        <p>{{subheading}}</p>
+      </div>
+
+      <div class="top-actions">
+        <button class="ghost" (click)="loadAll()">
+          ↻ Refresh
+        </button>
+
+        <button class="primary" (click)="openAdd()">
+          ＋ Add website
+        </button>
+      </div>
+    </header>
+
+
+    <div
+      *ngIf="message"
+      class="toast"
+      [class.bad]="messageType==='error'">
+      {{message}}
+    </div>
+
+
+    <!-- ================= OVERVIEW ================= -->
+
+    <section *ngIf="activeTab==='overview'">
+
+      <div class="quick-card" *ngIf="!websites.length">
+        <div class="quick-icon">✦</div>
+
+        <div>
+          <h3>Start your first SEO project</h3>
+
+          <p>
+            Add a website URL and SEOVault will create your workspace
+            for audits, crawling and performance checks.
+          </p>
+        </div>
+
+        <button class="primary" (click)="openAdd()">
+          Add website →
+        </button>
+      </div>
+
+
+      <div class="stat-grid">
+
+        <div class="stat">
+          <span>WEBSITES</span>
+          <strong>{{websites.length}}</strong>
+          <small>Tracked projects</small>
+          <i>◫</i>
+        </div>
+
+        <div class="stat">
+          <span>SEO HEALTH</span>
+
+          <strong>
+            {{seoScore}}<em>/100</em>
+          </strong>
+
+          <small>
+            {{seoScore ? 'Latest audit score' : 'Run an audit'}}
+          </small>
+
+          <i>◈</i>
+        </div>
+
+        <div class="stat">
+          <span>PAGE SPEED</span>
+
+          <strong>
+            {{speed}}<em>/100</em>
+          </strong>
+
+          <small>
+            {{speed ? performanceStatus : 'Run performance check'}}
+          </small>
+
+          <i>↗</i>
+        </div>
+
+        <div class="stat">
+          <span>INDEXED PAGES</span>
+          <strong>{{pageCount}}</strong>
+          <small>Discovered pages</small>
+          <i>▤</i>
+        </div>
+
+      </div>
+
+
+      <div class="grid-two">
+
+        <div class="panel">
+
+          <div class="panel-head">
+
+            <div>
+              <span class="panel-kicker">PROJECTS</span>
+              <h3>Your websites</h3>
+            </div>
+
+            <button
+              class="text-btn"
+              (click)="setTab('websites')">
+              View all →
+            </button>
+
+          </div>
+
+
+          <div
+            *ngFor="let w of websites.slice(0,4)"
+            class="site-row"
+            (click)="selectWebsite(w.id)">
+
+            <div class="site-favicon">
+              {{domainInitial(w.domain)}}
+            </div>
+
+            <div class="site-info">
+              <b>{{w.domain}}</b>
+
+              <small>
+                Added {{w.created_at | date:'mediumDate'}}
+              </small>
+            </div>
+
+            <span class="site-score">
+              {{w.id===selectedId ? seoScore : '—'}}
+            </span>
+
+            <span>›</span>
+
+          </div>
+
+
+          <div
+            *ngIf="!websites.length"
+            class="empty">
+            No websites yet.
+          </div>
+
+        </div>
+
+
+        <div class="panel insight">
+
+          <div class="panel-kicker">
+            NEXT ACTION
+          </div>
+
+          <h3>{{nextActionTitle}}</h3>
+
+          <p>{{nextActionText}}</p>
+
+          <button
+            class="primary small"
+            (click)="runPrimaryAction()">
+            {{nextActionButton}} →
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ================= WEBSITES ================= -->
+
+    <section *ngIf="activeTab==='websites'">
+
+      <div class="panel">
+
+        <div class="panel-head">
+
+          <div>
+            <span class="panel-kicker">
+              PROJECT MANAGEMENT
+            </span>
+
+            <h3>Website portfolio</h3>
+          </div>
+
+          <button
+            class="primary small"
+            (click)="openAdd()">
+            ＋ Add website
+          </button>
+
+        </div>
+
+
+        <div
+          *ngFor="let w of websites"
+          class="website-card"
+          [class.selected]="w.id===selectedId">
+
+          <div class="site-favicon large">
+            {{domainInitial(w.domain)}}
+          </div>
+
+          <div class="site-info">
+
+            <b>{{w.domain}}</b>
+
+            <small>
+              Project #{{w.id}} ·
+              {{w.created_at | date:'mediumDate'}}
+            </small>
+
+          </div>
+
+
+          <div class="card-actions">
+
+            <button
+              class="ghost small"
+              (click)="selectWebsite(w.id)">
+              Open
+            </button>
+
+            <button
+              class="ghost danger small"
+              (click)="deleteWebsite(w.id)">
+              Delete
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div
+          *ngIf="!websites.length"
+          class="empty">
+          Add a website to create your first project.
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ================= KEYWORDS ================= -->
+
+    <section *ngIf="activeTab==='keywords'">
+
+      <div class="panel">
+
+        <div class="panel-head">
+
+          <div>
+            <span class="panel-kicker">
+              KEYWORD LAB
+            </span>
+
+            <h3>
+              Discover search opportunities
+            </h3>
+          </div>
+
+        </div>
+
+
+        <div
+          *ngIf="!selectedId"
+          class="empty">
+          Select or add a website first.
+        </div>
+
+
+        <div
+          *ngIf="selectedId"
+          class="keyword-bar">
+
+          <input
+            [(ngModel)]="keywordInput"
+            placeholder="e.g. python developer course">
+
+          <button
+            class="primary"
+            (click)="suggestKeywords()">
+            Generate suggestions
+          </button>
+
+          <button
+            class="ghost"
+            (click)="saveKeyword()">
+            ＋ Track
+          </button>
+
+        </div>
+
+
+        <div class="chips">
+
+          <span *ngFor="let k of suggestions">
+
+            {{k}}
+
+            <button
+              (click)="saveKeywordValue(k)">
+              ＋
+            </button>
+
+          </span>
+
+        </div>
+
+
+        <div
+          class="tracked"
+          *ngIf="keywords.length">
+
+          <h4>Tracked keywords</h4>
+
+          <div class="keyword-table">
+
+            <div *ngFor="let k of keywords">
+
+              <span>{{k.keyword}}</span>
+
+              <small>
+                {{k.created_at | date:'mediumDate'}}
+              </small>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ================= SEO AUDIT ================= -->
+
+    <section *ngIf="activeTab==='audit'">
+
+      <div
+        class="panel"
+        *ngIf="selectedId">
+
+        <div class="panel-head">
+
+          <div>
+
+            <span class="panel-kicker">
+              TECHNICAL AUDIT
+            </span>
+
+            <h3>SEO health check</h3>
+
+          </div>
+
+          <button
+            class="primary small"
+            (click)="runAudit()">
+            Run audit
+          </button>
+
+        </div>
+
+
+        <div class="audit-hero">
+
+          <div class="score-ring">
+
+            <strong>{{seoScore}}</strong>
+
+            <span>/100</span>
+
+          </div>
+
+
+          <div>
+
+            <h3>{{auditStatus}}</h3>
+
+            <p>
+              Latest analysis for {{selectedDomain}}
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="checks">
+
+          <div>
+            <span>Title tag</span>
+
+            <b [class.ok]="audit?.title">
+              {{audit?.title ? 'Present':'Missing'}}
+            </b>
+          </div>
+
+
+          <div>
+            <span>Meta description</span>
+
+            <b [class.ok]="audit?.meta_description">
+              {{audit?.meta_description ? 'Present':'Missing'}}
+            </b>
+          </div>
+
+
+          <div>
+            <span>H1 heading</span>
+
+            <b [class.ok]="audit?.has_h1">
+              {{audit?.has_h1 ? 'Present':'Missing'}}
+            </b>
+          </div>
+
+
+          <div>
+
+            <span>Image alt text</span>
+
+            <b
+              [class.ok]="audit && audit.images_missing_alt===0">
+
+              {{audit
+                ? audit.images_missing_alt+' missing'
+                : 'Not checked'}}
+
+            </b>
+
+          </div>
+
+        </div>
+
+
+        <div
+          *ngIf="auditSuggestions.length"
+          class="recommend">
+
+          <h4>Recommended actions</h4>
+
+          <p *ngFor="let s of auditSuggestions">
+            • {{s}}
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div
+        *ngIf="!selectedId"
+        class="panel empty">
+
+        Select a website to run an audit.
+
+      </div>
+
+    </section>
+
+
+    <!-- ================= PERFORMANCE ================= -->
+
+    <section *ngIf="activeTab==='performance'">
+
+      <div class="performance-page" *ngIf="selectedId">
+
+        <!-- PERFORMANCE HEADER -->
+        <div class="performance-header">
+          <div>
+            <span class="panel-kicker">PERFORMANCE</span>
+            <h2>Performance Overview</h2>
+            <p>Track your website performance, SEO health and recent checks.</p>
+          </div>
+
+          <button class="primary small performance-check-btn" (click)="runPerformance()">
+            ↻ Check now
+          </button>
+        </div>
+
+
+        <!-- KPI CARDS -->
+        <div class="performance-kpis">
+
+          <div class="performance-score-card">
+            <div
+              class="performance-score-ring"
+              [class.good]="speed >= 90"
+              [class.warning]="speed >= 50 && speed < 90"
+              [class.poor]="speed < 50"
+              [style.background]="'conic-gradient(' + (speed >= 90 ? '#20ddb0' : speed >= 50 ? '#ffc52f' : '#ff536f') + ' ' + speed + '%, #17345e ' + speed + '%)'">
+              <div>
+                <strong>{{speed}}</strong>
+                <span>/100</span>
+              </div>
+            </div>
+
+            <div class="performance-score-info">
+              <span class="metric-label">PERFORMANCE SCORE</span>
+              <h3>
+                {{speed >= 90 ? 'Excellent' : speed >= 50 ? 'Needs improvement' : 'Needs attention'}}
+              </h3>
+              <p>{{performanceStatus}}</p>
+            </div>
+          </div>
+
+
+          <div class="performance-kpi-card">
+            <div class="kpi-icon blue">◈</div>
+            <span class="metric-label">SEO SCORE</span>
+            <strong>{{seoScore}}<em>/100</em></strong>
+            <div
+              class="kpi-status"
+              [class.warning]="seoScore >= 50 && seoScore < 90"
+              [class.poor]="seoScore < 50">
+              {{seoScore >= 90 ? 'Excellent' : seoScore >= 50 ? 'Needs improvement' : 'Needs attention'}}
+            </div>
+          </div>
+
+
+          <div class="performance-kpi-card">
+            <div class="kpi-icon cyan">▤</div>
+            <span class="metric-label">PAGES CRAWLED</span>
+            <strong>{{pageCount}}<em>pages</em></strong>
+            <p>Current website crawl</p>
+          </div>
+
+
+          <div class="performance-kpi-card">
+            <div class="kpi-icon green">✓</div>
+            <span class="metric-label">CHECK STATUS</span>
+            <strong class="status-value">{{performanceStatus}}</strong>
+            <p>Latest performance check</p>
+          </div>
+
+        </div>
+
+
+        <!-- GRAPH + BREAKDOWN -->
+        <div class="performance-main-grid">
+
+          <div class="performance-history-card">
+
+            <div class="performance-card-header">
+              <div class="history-title-row">
+                <div class="history-icon">↗</div>
+                <div>
+                  <h3>Performance History</h3>
+                  <p>Score trend over recent checks</p>
+                </div>
+              </div>
+
+              <div class="performance-legend">
+                <span><i class="legend-dot green"></i> 90–100 <b>Good</b></span>
+                <span><i class="legend-dot yellow"></i> 50–89 <b>Needs improvement</b></span>
+                <span><i class="legend-dot red"></i> 0–49 <b>Poor</b></span>
+              </div>
+            </div>
+
+            <div class="performance-chart" *ngIf="performanceChartDots.length; else performanceChartEmpty">
+              <svg viewBox="0 0 1000 360" preserveAspectRatio="none" class="performance-svg">
+
+                <defs>
+                  <linearGradient id="performanceAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" class="gradient-top"></stop>
+                    <stop offset="100%" class="gradient-bottom"></stop>
+                  </linearGradient>
+                </defs>
+
+                <!-- HEALTH ZONES -->
+                <rect x="60" y="20" width="900" height="56" class="chart-zone-green"></rect>
+                <rect x="60" y="76" width="900" height="112" class="chart-zone-yellow"></rect>
+                <rect x="60" y="188" width="900" height="112" class="chart-zone-red"></rect>
+
+                <!-- GRID -->
+                <g class="chart-grid">
+                  <ng-container *ngFor="let tick of [100,80,60,40,20,0]">
+                    <line x1="60" x2="960" [attr.y1]="chartY(tick)" [attr.y2]="chartY(tick)"></line>
+                    <text x="42" [attr.y]="chartY(tick) + 4">{{tick}}</text>
+                  </ng-container>
+                </g>
+
+                <!-- AREA -->
+                <polygon [attr.points]="performanceAreaPoints" class="performance-area"></polygon>
+
+                <!-- PERFORMANCE LINE -->
+                <polyline
+                  [attr.points]="performanceLinePoints"
+                  class="performance-line"
+                  fill="none">
+                </polyline>
+
+                <!-- SCORE POINTS -->
+                <g *ngFor="let point of performanceChartDots">
+                  <circle [attr.cx]="point.x" [attr.cy]="point.y" r="8" class="chart-point-glow"></circle>
+                  <circle
+                    [attr.cx]="point.x"
+                    [attr.cy]="point.y"
+                    r="5"
+                    [class.point-green]="point.score >= 90"
+                    [class.point-yellow]="point.score >= 50 && point.score < 90"
+                    [class.point-red]="point.score < 50">
+                  </circle>
+                </g>
+
+                <!-- DATE LABELS -->
+                <g class="chart-date-labels">
+                  <text
+                    *ngFor="let point of performanceChartDots"
+                    [attr.x]="point.x"
+                    y="335"
+                    text-anchor="middle">
+                    {{point.label}}
+                  </text>
+                </g>
+
+              </svg>
+            </div>
+
+            <ng-template #performanceChartEmpty>
+              <div class="chart-empty">
+                <div class="chart-empty-icon">↗</div>
+                <strong>No performance history yet</strong>
+                <span>Click “Check now” to create your first performance point.</span>
+              </div>
+            </ng-template>
+
+          </div>
+
+
+          <!-- BREAKDOWN -->
+          <div class="performance-breakdown-card">
+
+            <div class="performance-card-header">
+              <div>
+                <h3>Performance Breakdown</h3>
+                <p>Latest website health</p>
+              </div>
+            </div>
+
+            <div class="breakdown-overall">
+              <div
+                class="breakdown-ring"
+                [style.background]="'conic-gradient(' + (speed >= 90 ? '#20ddb0' : speed >= 50 ? '#ffc52f' : '#ff536f') + ' ' + speed + '%, #17345e ' + speed + '%)'">
+                <div>
+                  <strong>{{speed}}</strong>
+                  <span>Overall Score</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="breakdown-item">
+              <div><span>Speed</span><b>{{speed}}/100</b></div>
+              <div class="progress-track">
+                <div
+                  class="progress-fill"
+                  [class.green-fill]="speed >= 90"
+                  [class.yellow-fill]="speed >= 50 && speed < 90"
+                  [class.red-fill]="speed < 50"
+                  [style.width.%]="speed">
+                </div>
+              </div>
+            </div>
+
+            <div class="breakdown-item">
+              <div><span>SEO</span><b>{{seoScore}}/100</b></div>
+              <div class="progress-track">
+                <div
+                  class="progress-fill"
+                  [class.green-fill]="seoScore >= 90"
+                  [class.yellow-fill]="seoScore >= 50 && seoScore < 90"
+                  [class.red-fill]="seoScore < 50"
+                  [style.width.%]="seoScore">
+                </div>
+              </div>
+            </div>
+
+            <div class="breakdown-item">
+              <div><span>Pages</span><b>{{pageCount}}</b></div>
+              <div class="pages-indicator">{{pageCount}} pages tracked</div>
+            </div>
+
+            <div class="performance-message">
+              <div class="message-icon">
+                {{speed >= 90 ? '✓' : speed >= 50 ? '!' : '×'}}
+              </div>
+              <div>
+                <strong>
+                  {{speed >= 90 ? 'Great job!' : speed >= 50 ? 'Keep improving!' : 'Performance needs attention'}}
+                </strong>
+                <p>{{performanceStatus}}</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+
+        <!-- RECENT CHECKS -->
+        <div class="recent-performance-card">
+
+          <div class="performance-card-header">
+            <div class="history-title-row">
+              <div class="history-icon">◷</div>
+              <div>
+                <h3>Recent Checks</h3>
+                <p>Your latest performance measurements</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="performance-table" *ngIf="performanceHistory.length; else noPerformanceChecks">
+            <div class="performance-table-head">
+              <span>Date</span>
+              <span>Performance</span>
+              <span>SEO Score</span>
+              <span>Status</span>
+            </div>
+
+            <div class="performance-table-row" *ngFor="let h of performanceHistory.slice(0,6)">
+              <span>{{getPerformanceDate(h)}}</span>
+              <strong>{{getPerformanceScore(h)}}/100</strong>
+              <strong>{{h.seo_score || 0}}/100</strong>
+              <span
+                class="table-status"
+                [class.good]="getPerformanceScore(h) >= 90"
+                [class.warning]="getPerformanceScore(h) >= 50 && getPerformanceScore(h) < 90"
+                [class.poor]="getPerformanceScore(h) < 50">
+                {{getPerformanceScore(h) >= 90 ? 'Good' : getPerformanceScore(h) >= 50 ? 'Needs improvement' : 'Poor'}}
+              </span>
+            </div>
+          </div>
+
+          <ng-template #noPerformanceChecks>
+            <div class="performance-empty">
+              No performance checks yet. Click “Check now” above to start tracking.
+            </div>
+          </ng-template>
+
+        </div>
+
+      </div>
+
+
+      <div *ngIf="!selectedId" class="panel empty">
+        Select a website to monitor performance.
+      </div>
+
+    </section>
+
+
+    <!-- ================= REPORTS ================= -->
+
+    <section *ngIf="activeTab==='reports'">
+
+      <div
+        class="panel"
+        *ngIf="selectedId">
+
+        <div class="panel-head">
+
+          <div>
+
+            <span class="panel-kicker">
+              REPORTS
+            </span>
+
+            <h3>SEO Reports</h3>
+
+          </div>
+
+        </div>
+
+
+        <div class="report-card">
+
+          <div class="report-icon">
+            📊
+          </div>
+
+
+          <div class="report-info">
+
+            <h3>
+              Website SEO Report
+            </h3>
+
+            <p>
+              Generate and download the SEO report
+              for <strong>{{selectedDomain}}</strong>.
+            </p>
+
+            <small>
+              Includes SEO analysis and website information.
+            </small>
+
+          </div>
+
+
+          <div class="report-actions">
+
+            <button
+              class="primary small"
+              (click)="downloadPDF()">
+
+              📄 Download PDF
+
+            </button>
+
+
+            <button
+              class="ghost small"
+              (click)="downloadCSV()">
+
+              📊 Download CSV
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div
+        *ngIf="!selectedId"
+        class="panel empty">
+
+        Select a website first to generate a report.
+
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
+
+<!-- ================= ADD WEBSITE MODAL ================= -->
+
+<div
+  class="modal-backdrop"
+  *ngIf="showAdd">
+
+  <div class="modal">
+
+    <button
+      class="close"
+      (click)="showAdd=false">
+      ×
+    </button>
+
+    <span class="panel-kicker">
+      NEW PROJECT
+    </span>
+
+    <h2>Add a website</h2>
+
+    <p>
+      Enter the full URL, including https://
+    </p>
+
+
+    <form (ngSubmit)="addWebsite()">
+
+      <input
+        [(ngModel)]="websiteUrl"
+        name="websiteUrl"
+        placeholder="https://example.com"
+        required>
+
+
+      <button
+        class="primary full"
+        [disabled]="adding">
+
+        {{
+          adding
+            ? 'Creating project…'
+            : 'Create website project →'
+        }}
+
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
