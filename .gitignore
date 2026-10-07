@@ -11,3 +11,4 @@ dist/
 *.sqlite3
 data.json
 *.sqlite3.backup
+staticfiles/

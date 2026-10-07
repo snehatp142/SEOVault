@@ -25,3 +25,4 @@ urllib3==2.8.0
 gunicorn==26.2.0
 python-dotenv==1.2.4
 psycopg[binary]==3.3.6
+whitenoise==6.11.0
