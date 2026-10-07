@@ -1606,6 +1606,7 @@ export class DashboardComponent implements OnInit {
     );
 
     this.hydrate();
+    this.router.navigate(['/website',id]);
 
     this.notify(
       'Project selected',

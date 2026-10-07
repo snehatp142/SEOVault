@@ -15,7 +15,8 @@ RUN npm run build
 FROM nginx:alpine
 
 COPY --from=build /app/dist/seo-frontend/browser /usr/share/nginx/html
+COPY src/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"] 
+CMD ["nginx", "-g", "daemon off;"]

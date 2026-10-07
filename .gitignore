@@ -9,3 +9,5 @@ dist/
 .vscode/
 .idea/
 *.sqlite3
+data.json
+*.sqlite3.backup
