@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-export const BASE_URL = 'http://127.0.0.1:8000/api';
+export const BASE_URL = 'https://seovault.onrender.com/api';
 
 @Injectable({providedIn:'root'})
 export class ApiService {
