@@ -15,4 +15,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py migrate && gunicorn seo_backend.wsgi:application --bind 0.0.0.0:8000 --workers 3"]
+CMD ["sh", "-c", "echo '=== Starting Django migration ===' && python manage.py migrate --verbosity 2 && echo '=== Migration finished ===' && echo '=== Starting Gunicorn ===' && gunicorn seo_backend.wsgi:application --bind 0.0.0.0:8000 --workers 1"]
